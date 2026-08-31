@@ -4,7 +4,7 @@ MATLAB tools for modelling tau-PET topography using functional connectivity, acc
 
 **Patient-specific functional brain architecture explains cortical patterns of tau PET in Alzheimer’s disease**
 
-Preprint of the original submitted manuscript:  
+preprint of the original submitted manuscript:  
 https://www.biorxiv.org/content/10.1101/2025.10.02.679969v2
 
 Related posts from the original submission:
@@ -15,9 +15,9 @@ Related posts from the original submission:
 
 ## purpose
 
-This repository provides MATLAB code implementing the core analytical framework used in the manuscript, including subject-space Schaefer parcellation, subject-space surface projection/parcellation of rs-fMRI and PET data, regional FC-PET regression, hybrid functional connectivity construction, whole-brain model comparison, canonical PET-pattern modelling, FC null-model analyses, Moran surrogate tau-PET maps, cross-validated ridge regression, and split-half coefficient stability.
+this repository provides MATLAB code implementing the core analytical framework used in the manuscript, including subject-space Schaefer parcellation, subject-space surface projection/parcellation of rs-fMRI and PET data, regional FC-PET regression, hybrid functional connectivity construction, whole-brain model comparison, canonical PET-pattern modelling, FC null-model analyses, Moran surrogate tau-PET maps, cross-validated ridge regression, and split-half coefficient stability.
 
-The repository is organized as a set of independent mini-demos rather than as one monolithic reproduction script. each demo illustrates one core component of the analysis and documents the expected inputs and outputs.
+the repository is organized as a set of independent mini-demos rather than as one monolithic reproduction script. each demo illustrates one core component of the analysis and documents the expected inputs and outputs.
 
 ## important data note
 
@@ -25,21 +25,19 @@ BioFINDER-2, ADNI, and A4 imaging data are not distributed with this repository.
 
 ## current status
 
-This repository is being prepared for the manuscript revision. the current version provides the directory structure, input/output templates, and documented entry points for the core analyses. method functions marked as pending will be filled with the exact implementations used in the revised manuscript.
-
-The repository does not currently regenerate every figure in the manuscript. the aim is to provide reusable MATLAB implementations of the core methods underlying the main analyses. figure-specific reproduction scripts may be added in future updates.
+this repository is released in connection with a revision of the original manuscript submitted for second round of peer review. the current version provides the directory structure, input/output templates, and documented entry points for the core analyses. method functions marked as pending will be filled with the exact implementations used in the revised manuscript. the repository does not intend to regenerate every figure in the manuscript. the aim is to provide reusable MATLAB implementations of the core methods underlying the main analyses. figure-specific reproduction scripts may be added in future updates.
 
 ## quick start
 
-In MATLAB, from the repository root:
+in MATLAB, from the repository root:
 
 ```matlab
 startup
 ```
 
-Then open a demo folder, read its `README.md`, and run the corresponding `taufc_demo_*.m` file after replacing the input block with your own data or after the synthetic example input has been added. demos 01-03 are different from the synthetic-data demos because subject-space parcellation, rs-fMRI surface projection, and PET surface projection require real FreeSurfer outputs, imaging files, registration transforms, and local atlas resources.
+then open a demo folder, read its `README.md`, and run the corresponding `taufc_demo_*.m` file after replacing the input block with your own data or after the synthetic example input has been added. demos 01-03 are different from the synthetic-data demos because subject-space parcellation, rs-fMRI surface projection, and PET surface projection require real FreeSurfer outputs, imaging files, registration transforms, and local atlas resources.
 
-Example:
+example:
 
 ```matlab
 startup
@@ -85,23 +83,23 @@ Behjat2026_tauFC_MATLAB/
 
 ## naming conventions
 
-Repository functions use the prefix `taufc_func_*.m`.
+repository functions use the prefix `taufc_func_*.m`.
 
-Demo scripts use the prefix `taufc_demo_*.m`.
+demo scripts use the prefix `taufc_demo_*.m`.
 
-If helper scripts are needed later, they should use the prefix `taufc_scr_*.m`.
+helper scripts use the prefix `taufc_scr_*.m`.
 
-General-purpose helper functions with names beginning with `hb_*.m` are maintained separately in:
+general-purpose helper functions with naming format `hb_*.m` are maintained separately in:
 
 https://github.com/aitchbi/matlab-utils
 
-They are not duplicated here. demos or functions that depend on `hb_*` utilities will state this in their local README file.
+they are not duplicated here. demos or functions that depend on `hb_*` utilities will state this in their local README file.
 
 ## dependencies
 
-The code is written for MATLAB. additional dependencies will be listed per demo when required.
+the code is written for MATLAB. additional dependencies will be listed per demo when required.
 
-Expected external dependencies include:
+expected external dependencies include:
 
 - Harry Behjat MATLAB utilities: https://github.com/aitchbi/matlab-utils
 - external null-model implementations used for degree-preserving or degree- and strength-preserving FC randomization, where applicable
@@ -111,4 +109,4 @@ See `docs/dependencies.md` for details.
 
 ## citation
 
-Please cite the manuscript and this repository if you use the code. citation metadata for the repository is provided in `CITATION.cff` and will be updated with the final DOI after publication.
+please cite the manuscript and this repository if you use the code. citation metadata for the repository is provided in `CITATION.cff` and will be updated with the final DOI after publication.
