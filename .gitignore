@@ -1,0 +1,27 @@
+# matlab
+*.asv
+*.autosave
+
+# os/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# local data and outputs
+data/
+results/
+outputs/
+tmp/
+temp/
+
+# neuroimaging and cohort-derived data
+*.mat
+*.nii
+*.nii.gz
+*.mgz
+*.gii
+*.annot
+*.mgh
+*.csv
+*.tsv
