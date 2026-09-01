@@ -1,29 +1,33 @@
-# demo: canonical PET map derivation
+# 07 canonical PET maps
 
-## purpose
+this demo estimates canonical off- and on-target PET patterns from parcellated PET SUVR data using the original `hb_tp2tpp.m` utility.
 
-This demo documents how to run the canonical PET map derivation module.
+canonical PET maps are cohort-level reference patterns. they summarize typical regional PET signal distributions observed across subjects, rather than representing any single participant.
 
-## manuscript connection
+the maps are derived using region-wise Gaussian mixture modelling. for each cortical region, `hb_tp2tpp.m` fits one- and two-component Gaussian mixture models to PET SUVR values across subjects. this approach follows Vogel et al. (2020), where Gaussian mixture modelling was used to define tau-PET positivity probabilities. here, the same regional mixture-model framework is used to define canonical PET-pattern maps: the lower-mean component is treated as off-target binding, the higher-mean component is treated as on-target binding, and the component means across regions form the canonical off- and on-target maps.
 
-Fig. 3 and Fig. S8-S10.
+the demo uses synthetic PET data only, with input dimensions:
 
-## inputs
+```text
+regions x subjects
+```
 
-- `pet_matrix: P x N PET matrix`
+this matrix represents parcellated tau-PET data using any desired cortical atlas. to use real data, replace the synthetic `PET` matrix in the demo script with a matrix where each row is an atlas parcel and each column is a subject. the number of rows should match the selected atlas resolution.
 
-## outputs
+the main call is:
 
-- `canonical off-target PET map`
-- `canonical on-target PET map`
-- `Gaussian mixture parameters`
+```matlab
+[TPP, AIC, OFTB, ONTB, GMM] = hb_tp2tpp(PET, 'WhichRegionalGMMsToReturn', regions_to_store_gmm);
+```
 
-## status
+the demo saves outputs to:
 
-The exact manuscript implementation will be added to the corresponding `src/` function. this demo intentionally does not include a simplified replacement implementation.
+```text
+demos/07_canonical_pet_maps/results/
+```
 
-## how to use
+this demo documents the canonical PET-pattern estimation step. it does not include BioFINDER-2, ADNI, or A4 data, and it does not regenerate manuscript figures.
 
-1. run `startup` from the repository root.
-2. replace the input block in the demo script with your own parcellated data.
-3. run the demo script.
+## reference
+
+Vogel, J. W., Iturria-Medina, Y., Strandberg, O. T., Smith, R., Levitis, E., Evans, A. C., and Hansson, O. (2020). Spread of pathological tau proteins through communicating neurons in human Alzheimer’s disease. *Nature Communications*, 11, 2612.
