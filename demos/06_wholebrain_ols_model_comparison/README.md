@@ -1,29 +1,54 @@
-# demo: whole-brain OLS model comparison
+# 06 whole-brain OLS model comparison
 
-## purpose
+this demo compares whole-brain OLS models that explain regional tau-PET patterns using different FC predictors.
 
-This demo documents how to run the whole-brain OLS model comparison module.
+the demo uses the standalone `fitlhrh.m` utility. `fitlhrh.m` fits separate left- and right-hemisphere OLS models and returns corrected R2 values for each hemisphere. the final model score in this demo is the mean of the left- and right-hemisphere corrected R2 values.
 
-## manuscript connection
+the demo compares three FC models:
 
-Fig. 2 and Fig. S2.
+```text
+template FC
+subject FC
+hybrid FC
+```
 
-## inputs
+`template FC` represents a group-level or reference connectivity matrix. `subject FC` represents each participant's own functional connectivity matrix. `hybrid FC` represents the weighted combination of template FC and subject FC profiles.
 
-- `fc_matrix: P x P FC representation`
-- `pet: P x 1 tau-PET vector`
-- `optional hemisphere labels`
+the demo uses synthetic data only. the synthetic inputs have the following dimensions:
 
-## outputs
+```text
+TmplFC:   regions x regions
+SubjFC:   regions x regions x subjects
+HybridFC: regions x regions x subjects
+PET:      regions x subjects
+```
 
-- `corrected R2 for whole-brain OLS model`
+`PET` represents parcellated tau-PET data, where each row is an atlas parcel and each column is a subject. the FC matrices must use the same atlas and region ordering as the PET matrix.
 
-## status
+to use real data, replace the synthetic `TmplFC`, `SubjFC`, `HybridFC`, and `PET` variables in the demo script with matrices derived from the desired cohort and atlas. the number of PET rows must match the number of FC regions, and the number of PET columns must match the number of subject-level FC matrices.
 
-The exact manuscript implementation will be added to the corresponding `src/` function. this demo intentionally does not include a simplified replacement implementation.
+the main calls are:
 
-## how to use
+```matlab
+[r2l, r2r] = fitlhrh(TmplFC, tpicis);
+[r2l, r2r] = fitlhrh(SubjFC(:,:,is), tpicis);
+[r2l, r2r] = fitlhrh(HybridFC(:,:,is), tpicis);
+```
 
-1. run `startup` from the repository root.
-2. replace the input block in the demo script with your own parcellated data.
-3. run the demo script.
+these are in-sample explanatory OLS fits, not cross-validated prediction analyses.
+
+the demo saves outputs to:
+
+```text
+demos/06_wholebrain_ols_model_comparison/results/
+```
+
+the saved outputs include:
+
+```text
+wholebrain_ols_model_comparison_demo_outputs.mat
+wholebrain_ols_model_comparison_demo_summary.csv
+wholebrain_ols_model_comparison_demo_summary.png
+```
+
+this demo documents the whole-brain OLS model-comparison step. it does not include BioFINDER-2, ADNI, or A4 data, and it does not regenerate manuscript figures.
