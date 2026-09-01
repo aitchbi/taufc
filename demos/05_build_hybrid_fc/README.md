@@ -1,30 +1,55 @@
-# demo: hybrid FC construction
+# 05 build hybrid FC
 
-## purpose
+this demo builds hybrid FC matrices by combining template FC and subject-specific FC using regional model weights.
 
-This demo documents how to run the hybrid FC construction module.
+hybrid FC is a weighted connectivity matrix. for each subject, the template FC and subject FC matrices are first column-normalized. each regional FC profile is then weighted by its corresponding template-FC and subject-FC beta coefficient, and the resulting hybrid FC matrix is column-normalized again after mixing.
 
-## manuscript connection
+conceptually, the hybrid FC for each subject is:
 
-Fig. 2 framework.
+```text
+hybrid FC = weighted template FC + weighted subject FC
+```
 
-## inputs
+the demo uses synthetic data only. the synthetic inputs have the following dimensions:
 
-- `subject_fc: P x P subject-level FC matrix`
-- `template_fc: P x P template FC matrix`
-- `beta_template: P x 1 regional template-FC weights`
-- `beta_subject: P x 1 regional subject-FC weights`
+```text
+TmplFC:    regions x regions
+SubjFC:    regions x regions x subjects
+beta_tmpl: subjects x regions
+beta_subj: subjects x regions
+```
 
-## outputs
+`TmplFC` represents a group-level or reference connectivity matrix. `SubjFC` contains one subject-specific FC matrix per participant. `beta_tmpl` and `beta_subj` represent regional weights, such as beta coefficients estimated from regional FC–PET model fits.
 
-- `hybrid_fc: P x P matrix`
+to use real data, replace the synthetic `TmplFC`, `SubjFC`, `beta_tmpl`, and `beta_subj` variables in the demo script with matrices derived from the desired cohort and atlas. the number of regions must be consistent across all inputs.
 
-## status
+the demo also computes a small `summary_table` as a smoke test. this summary is not part of the analysis. it is saved only to check that the hybrid FC matrices are related to both template FC and subject FC, and that the hybrid FC columns were normalized after mixing.
 
-The exact manuscript implementation will be added to the corresponding `src/` function. this demo intentionally does not include a simplified replacement implementation.
+the demo saves outputs to:
 
-## how to use
+```text
+demos/05_build_hybrid_fc/results/
+```
 
-1. run `startup` from the repository root.
-2. replace the input block in the demo script with your own parcellated data.
-3. run the demo script.
+the saved outputs include:
+
+```text
+hybrid_fc_demo_outputs.mat
+hybrid_fc_demo_subject_001.png
+```
+
+this demo documents the hybrid FC construction step. it does not include BioFINDER-2, ADNI, or A4 data, and it does not regenerate manuscript figures.
+
+## note on interpretation
+
+hybrid FC matrices should not be interpreted as conventional FC matrices. because the construction applies region-specific weights to seed connectivity profiles, the resulting matrices are not expected to be symmetric by design.
+
+in this work, hybrid FC is used as a collection of regional connectivity profiles: that is, each column is treated as the hybrid seed profile for one region. the goal is not to use the full hybrid FC matrix directly for conventional graph or network analyses.
+
+for analyses that require a symmetric matrix, users should make that choice explicitly. one simple option is to symmetrize each subject's hybrid FC matrix after construction, for example:
+
+```matlab
+HybridFC_sym = (HybridFC + HybridFC')/2;
+```
+
+additional choices, such as diagonal handling and any further normalization, should be made according to the intended downstream analysis.
