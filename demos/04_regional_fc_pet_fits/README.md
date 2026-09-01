@@ -1,31 +1,50 @@
-# demo: regional FC-PET fits
+# 04 regional FC PET fits
 
-## purpose
+this demo runs regional FC–PET regression models using the original `run_fitlms.m` utility.
 
-This demo documents how to run the regional FC-PET fits module.
+the goal is to estimate how well regional tau-PET patterns can be explained by functional connectivity profiles. for each group, the model relates parcellated tau-PET signal to FC profiles across cortical regions.
 
-## manuscript connection
+the demo compares three model families:
 
-Fig. 1 and Fig. S1.
+```text
+template FC
+subject FC
+template FC + subject FC
+```
 
-## inputs
+`template FC` represents a group-level or reference connectivity matrix. `subject FC` represents each participant's own functional connectivity matrix. the combined model evaluates whether subject-specific FC explains regional PET variation beyond the template FC profile.
 
-- `subject_fc: P x P subject-level FC matrix`
-- `template_fc: P x P template FC matrix`
-- `pet: P x 1 parcellated tau-PET vector`
+the demo uses synthetic data only. the synthetic inputs have the same structure expected by `run_fitlms.m`:
 
-## outputs
+```text
+FC{group}:  regions x regions x subjects
+PET{group}: regions x subjects
+N:          subjects per group
+TmplFC:     regions x regions
+```
 
-- `corrected R2 for template FC alone`
-- `corrected R2 for template FC + subject FC`
-- `regional beta coefficients used for hybrid FC construction`
+`FC` is a cell array with one entry per diagnostic or biomarker group. each `FC{group}` entry contains subject-level FC matrices. `PET` is a cell array with matching group structure, where each column is one subject and each row is one atlas parcel.
 
-## status
+to use real data, replace the synthetic `FC`, `PET`, `N`, and `TmplFC` variables in the demo script with parcellated FC and tau-PET data from the desired cohort and atlas. the number of PET rows must match the number of FC regions, and the number of PET columns must match the number of FC subjects within each group.
 
-The exact manuscript implementation will be added to the corresponding `src/` function. this demo intentionally does not include a simplified replacement implementation.
+the main call is:
 
-## how to use
+```matlab
+[FITLMS, TmplFC_proc, rng_setting] = run_fitlms(FC, PET, N, TmplFC, opts);
+```
 
-1. run `startup` from the repository root.
-2. replace the input block in the demo script with your own parcellated data.
-3. run the demo script.
+the demo saves outputs to:
+
+```text
+demos/04_regional_fc_pet_fits/results/
+```
+
+the saved outputs include:
+
+```text
+regional_fc_pet_fits_demo_outputs.mat
+regional_fc_pet_fits_demo_summary.csv
+regional_fc_pet_fits_demo_summary.png
+```
+
+this demo documents the regional FC–PET model-fitting step. it does not include BioFINDER-2, ADNI, or A4 data, and it does not regenerate manuscript figures.
