@@ -1,18 +1,287 @@
-%-prepare workspace.
-%--------------------------------------------------------------------------
-clear; clc;
+clc
+clear
+close all
 
-%-define inputs.
+%-paths.
 %--------------------------------------------------------------------------
-% replace this block with your own data before running the demo.
-% subject_fc: P x P subject-level FC matrix
-% external degree- and strength-preserving null-model dependency
+demo_dir = fileparts(mfilename('fullpath'));
+repo_root = fileparts(fileparts(demo_dir));
 
-%-run degree- and strength-preserving FC null model.
-%--------------------------------------------------------------------------
-% this call will run after the exact implementation has been added.
-null_fc = taufc_func_run_strength_preserving_fc_null(subject_fc);
+addpath(genpath(fullfile(repo_root, 'src')));
 
-%-inspect outputs.
+assert(exist('run_fitlms', 'file') ~= 0, ...
+    'run_fitlms.m not found. ', ...
+    'check that src/utils/utils_tmp is on the MATLAB path.');
+
+assert(exist('hb_graph_shuffle_v0', 'file') ~= 0, ...
+    'hb_graph_shuffle_v0.m not found. ', ...
+    'check that src/utils/utils_tmp is on the MATLAB path.');
+
+assert(exist('fcn_randomize_str_hb', 'file') ~= 0, ...
+    ['fcn_randomize_str_hb.m not found. this function comes from ', ...
+    'https://github.com/aitchbi/graph_rewiring. ', ...
+    'copy the required files ', ...
+    'to src/utils/utils_tmp/ or add the utils folder ', ... 
+    '(ie graph_rewiring/utils) to the MATLAB path.']);
+
+assert(exist('hb_graph_rewire', 'file') ~= 0, ...
+    ['hb_graph_rewire.m not found. this function comes from ', ...
+    'https://github.com/aitchbi/graph_rewiring. copy hb_graph_rewire ', ...
+    'to src/utils/utils_tmp/ or add that utils folder ', ...
+    '(ie graph_rewiring/utils) to the MATLAB path.']);
+
+assert(exist('fitlm', 'file') ~= 0, ...
+    'fitlm not found. ',...
+    'this demo requires the Statistics and Machine Learning Toolbox.');
+
+d_out = fullfile(demo_dir, 'results');
+
+if ~exist(d_out, 'dir')
+    
+    mkdir(d_out);
+end
+
+%-synthetic inputs.
 %--------------------------------------------------------------------------
-disp(size(null_fc));
+rng(1)
+
+n_regions = 40;
+n_subjects = 4;
+
+[FC, PET, N, TmplFC, regressors] = local_make_synthetic_inputs(n_regions, n_subjects);
+
+%-options.
+%--------------------------------------------------------------------------
+opts = struct;
+
+opts.classes = {'synthetic group'};
+
+opts.classes_todo = [];
+
+opts.regressors.tau_offtarget = regressors.tau_offtarget;
+
+opts.regressors.tau_ontarget = regressors.tau_ontarget;
+
+opts.ShuffledSubjAnalysis_DegreeSequencePreserve.do = true;
+
+opts.ShuffledSubjAnalysis_DegreeSequencePreserve.type = 'PreserveDegreeSequence';
+
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.do = true;
+
+% small demo settings. increase these for production analyses.
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.nstage = 5;
+
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.niter = 500;
+
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.temp = 1000;
+
+opts.NetworkBasedFitlms.do = false;
+
+opts.NetworkBasedFitlms.atlasinfo = [];
+
+opts.SubjectAmyPetAsRegressor.do = false;
+
+opts.ParallelRun = false;
+
+opts.JustFirstNSubjsPerGroup = [];
+
+%-run regional empirical and strength-preserving null FC models.
+%--------------------------------------------------------------------------
+% this demo uses the same run_fitlms.m option used in the manuscript code.
+% the strength-preserving null starts from a degree-preserving rewired FC
+% and then uses the graph-rewiring utilities from:
+%
+% https://github.com/aitchbi/graph_rewiring
+%
+% in particular, run_fitlms.m calls fcn_randomize_str_hb.m, which is the
+% wrapper/updated implementation used in this workflow. the goal is to
+% approximately preserve nodal strength while randomizing the specific
+% weighted wiring pattern.
+
+[FITLMS, TmplFC_proc, rng_setting] = run_fitlms(FC, PET, N, TmplFC, opts);
+
+empirical_r2 = FITLMS{1}.TmplFc_And_SubjFc.r2;
+
+degree_null_r2 = FITLMS{1}.TmplFc_And_DegreeSequencePreserveShuffledSubjFc.r2;
+
+strength_null_r2 = FITLMS{1}.TmplFc_And_StrengthSequenceApproxPreserveShuffledSubjFc.r2;
+
+summary_table = table( ...
+    mean(empirical_r2(:), 'omitnan'), ...
+    mean(degree_null_r2(:), 'omitnan'), ...
+    mean(strength_null_r2(:), 'omitnan'), ...
+    mean(empirical_r2(:) - strength_null_r2(:), 'omitnan'), ...
+    'VariableNames', { ...
+    'mean_r2_empirical_subject_fc', ...
+    'mean_r2_degree_preserving_null_fc', ...
+    'mean_r2_strength_preserving_null_fc', ...
+    'delta_r2_empirical_minus_strength_null'});
+
+disp(summary_table)
+
+%-save outputs.
+%--------------------------------------------------------------------------
+f_mat = fullfile(d_out, 'strength_preserving_fc_null_demo_outputs.mat');
+
+save(f_mat, ...
+    'FITLMS', ...
+    'TmplFC_proc', ...
+    'rng_setting', ...
+    'summary_table', ...
+    'empirical_r2', ...
+    'degree_null_r2', ...
+    'strength_null_r2', ...
+    'FC', ...
+    'PET', ...
+    'N', ...
+    'TmplFC', ...
+    'opts');
+
+f_csv = fullfile(d_out, 'strength_preserving_fc_null_demo_summary.csv');
+
+writetable(summary_table, f_csv);
+
+%-plot summary.
+%--------------------------------------------------------------------------
+f_fig = fullfile(d_out, 'strength_preserving_fc_null_demo_summary.png');
+
+model_mean = [
+    mean(empirical_r2(:), 'omitnan')
+    mean(degree_null_r2(:), 'omitnan')
+    mean(strength_null_r2(:), 'omitnan')
+    ];
+
+figure('Color', 'w');
+
+bar(model_mean)
+
+set(gca, ...
+    'XTick', 1:3, ...
+    'XTickLabel', ...
+    {'empirical subject FC', ...
+    'degree-preserving null FC', ...
+    'strength-preserving null FC'});
+
+ylabel('corrected R^2');
+title('strength-preserving FC null model');
+
+box off
+
+exportgraphics(gcf, f_fig, 'Resolution', 300);
+
+fprintf('\nfile saved: %s\n', f_mat);
+fprintf('file saved: %s\n', f_csv);
+fprintf('file saved: %s\n', f_fig);
+
+fprintf('\ndemo done.\n');
+
+%==========================================================================
+function [FC, PET, N, TmplFC, regressors] = local_make_synthetic_inputs(n_regions, n_subjects)
+
+region_axis = linspace(0, 1, n_regions)';
+
+dist_mat = abs(region_axis - region_axis');
+
+offtarget = 1.00 + 0.05*region_axis;
+
+ontarget = 1.15 + 0.70*(region_axis.^1.5);
+
+regressors = struct;
+
+regressors.tau_offtarget.mean = offtarget;
+
+regressors.tau_ontarget.mean = ontarget;
+
+base_fc = exp(-5*dist_mat);
+
+base_fc = base_fc ./ max(base_fc(:));
+
+base_fc(logical(eye(n_regions))) = 0;
+
+TmplFC = local_threshold_symmetric_fc(base_fc, 0.25);
+
+FC = cell(1, 1);
+
+PET = cell(1, 1);
+
+N = n_subjects;
+
+FC{1} = zeros(n_regions, n_regions, n_subjects);
+
+PET{1} = zeros(n_regions, n_subjects);
+
+for is=1:n_subjects
+    
+    severity = 0.40 + 0.12*randn;
+    
+    tau_pattern = offtarget + severity*(ontarget - offtarget);
+    
+    tau_pattern = local_unit_interval(tau_pattern);
+    
+    tau_affinity = tau_pattern*tau_pattern';
+    
+    subject_noise = 0.10*randn(n_regions);
+    
+    subject_noise = (subject_noise + subject_noise')/2;
+    
+    fc = base_fc + 0.45*tau_affinity + subject_noise;
+    
+    fc = max(fc, 0);
+    
+    fc(logical(eye(n_regions))) = 0;
+    
+    fc = local_threshold_symmetric_fc(fc, 0.25);
+    
+    FC{1}(:,:,is) = fc;
+    
+    fc_component = fc*tau_pattern;
+    
+    fc_component = local_unit_interval(fc_component);
+    
+    PET{1}(:,is) = 1.0 + 0.60*tau_pattern + 0.25*fc_component + 0.04*randn(n_regions, 1);
+end
+end
+
+%==========================================================================
+function fc = local_threshold_symmetric_fc(fc, density)
+
+fc = (fc + fc')/2;
+
+fc(logical(eye(size(fc, 1)))) = 0;
+
+I = triu(true(size(fc)), 1);
+
+v = fc(I);
+
+n_keep = max(1, round(density*numel(v)));
+
+[~, idx] = sort(v, 'descend');
+
+keep = false(size(v));
+
+keep(idx(1:n_keep)) = true;
+
+A = zeros(size(fc));
+
+A(I) = v.*keep;
+
+fc = A + A';
+
+if max(fc(:)) > 0
+    
+    fc = fc ./ max(fc(:));
+end
+end
+
+%==========================================================================
+function x = local_unit_interval(x)
+
+x = x - min(x);
+
+denom = max(x);
+
+if denom > 0
+    
+    x = x ./ denom;
+end
+end
