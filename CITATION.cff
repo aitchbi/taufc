@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: "taufc"
-message: "If you use this code, please cite the associated manuscript and this repository."
+message: "if you use this code, please cite the associated manuscript and this repository."
 type: software
 authors:
   - family-names: Behjat
@@ -8,5 +8,5 @@ authors:
 repository-code: "https://github.com/aitchbi/taufc"
 url: "https://github.com/aitchbi/taufc"
 year: 2026
-license: MIT
+license: GPL-3.0-only
 version: "0.1.0"
