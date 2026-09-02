@@ -12,6 +12,9 @@ addpath(genpath(fullfile(repo_root, 'src')));
 assert(exist('fitlhrh', 'file') ~= 0, ...
     'fitlhrh.m not found. check that src/utils/utils_tmp is on the MATLAB path.');
 
+assert(exist('taufc_func_build_hybrid_fc', 'file') ~= 0, ...
+    'taufc_func_build_hybrid_fc.m not found. check that src/hybrid is on the MATLAB path.');
+
 assert(exist('fitols_regional', 'file') ~= 0, ...
     'fitols_regional.m not found. check that src/utils/utils_tmp is on the MATLAB path.');
 
@@ -213,8 +216,8 @@ for is=1:n_subjects
     
     beta_subj = 0.35 + 0.20*sin(2*pi*region_axis') + 0.04*randn(1, n_regions);
     
-    HybridFC(:,:,is) = local_build_hybrid_fc(TmplFC, SubjFC, beta_tmpl, beta_subj);
-    
+    HybridFC(:,:,is) = taufc_func_build_hybrid_fc(TmplFC, SubjFC, beta_tmpl, beta_subj);
+
     hybrid_component = HybridFC(:,:,is)*seed_weights;
     
     hybrid_component = local_unit_interval(hybrid_component);
@@ -227,30 +230,6 @@ for is=1:n_subjects
         0.35*hybrid_component + ...
         0.04*randn(n_regions, 1);
 end
-end
-
-%==========================================================================
-function HybridFC = local_build_hybrid_fc(TmplFC, SubjFC, beta_tmpl, beta_subj)
-
-n_regions = size(TmplFC, 1);
-
-TmplFC = TmplFC ./ max(vecnorm(TmplFC), eps);
-
-SubjFC = SubjFC ./ max(vecnorm(SubjFC), eps);
-
-beta_tmpl = reshape(beta_tmpl, 1, []);
-
-beta_subj = reshape(beta_subj, 1, []);
-
-bt = repmat(beta_tmpl, n_regions, 1);
-
-bs = repmat(beta_subj, n_regions, 1);
-
-HybridFC = bt.*TmplFC + bs.*SubjFC;
-
-HybridFC = HybridFC ./ max(vecnorm(HybridFC), eps);
-
-HybridFC(logical(eye(n_regions))) = 0;
 end
 
 %==========================================================================
