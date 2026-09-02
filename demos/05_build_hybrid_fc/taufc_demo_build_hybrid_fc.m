@@ -27,12 +27,11 @@ n_subjects = 8;
 HybridFC = zeros(n_regions, n_regions, n_subjects);
 
 for is=1:n_subjects
-    
-    HybridFC(:,:,is) = local_build_hybrid_fc( ...
-        TmplFC, ...
-        SubjFC(:,:,is), ...
-        beta_tmpl(is,:), ...
-        beta_subj(is,:));
+    HybridFC(:,:,is) = taufc_func_build_hybrid_fc( ...
+    TmplFC, ...
+    SubjFC(:,:,is), ...
+    beta_tmpl(is,:), ...
+    beta_subj(is,:));
 end
 
 %-summarize output as a smoke test.
@@ -135,39 +134,6 @@ for is=1:n_subjects
     
     beta_subj(is,:) = 0.35 + 0.20*sin(2*pi*region_axis') + 0.04*randn(1, n_regions);
 end
-end
-
-%==========================================================================
-function HybridFC = local_build_hybrid_fc(TmplFC, SubjFC, beta_tmpl, beta_subj)
-
-n_regions = size(TmplFC, 1);
-
-assert(isequal(size(TmplFC), size(SubjFC)), ...
-    'TmplFC and SubjFC must have the same dimensions.');
-
-assert(numel(beta_tmpl)==n_regions, ...
-    'beta_tmpl must have one value per region.');
-
-assert(numel(beta_subj)==n_regions, ...
-    'beta_subj must have one value per region.');
-
-TmplFC = TmplFC ./ max(vecnorm(TmplFC), eps);
-
-SubjFC = SubjFC ./ max(vecnorm(SubjFC), eps);
-
-beta_tmpl = reshape(beta_tmpl, 1, []);
-
-beta_subj = reshape(beta_subj, 1, []);
-
-bt = repmat(beta_tmpl, n_regions, 1);
-
-bs = repmat(beta_subj, n_regions, 1);
-
-HybridFC = bt.*TmplFC + bs.*SubjFC;
-
-HybridFC = HybridFC ./ max(vecnorm(HybridFC), eps);
-
-HybridFC(logical(eye(n_regions))) = 0;
 end
 
 %==========================================================================
