@@ -21,8 +21,10 @@ the empirical subject FC, degree-preserving null FC, and strength-preserving nul
 for more detail on the graph-rewiring procedure, including example plots and visual illustrations of degree- and strength-preserving rewired FC matrices, see the README of the graph-rewiring repository:
 
 ```text
-https://github.com/aitchbi/graph_rewiring/blob/main/README.md
+https://github.com/aitchbi/graph_rewiring
 ```
+
+that repository also describes the relationship between `fcn_randomize_str_hb.m`, `hb_graph_rewire.m`, earlier graph-rewiring code, and the strength-preserving simulated-annealing method of Milisav et al. (2025).
 
 ## dependencies
 

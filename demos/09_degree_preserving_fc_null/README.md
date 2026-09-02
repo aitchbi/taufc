@@ -1,6 +1,6 @@
 # 09 degree-preserving FC null
 
-this demo runs a degree-preserving FC null-model analysis using the original `run_fitlms.m` utility.
+this demo illustrates how degree-preserving null FC matrices can be used to test whether FC–PET associations depend on specific network wiring rather than nodal degree alone.
 
 ## theory
 

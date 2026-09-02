@@ -14,6 +14,12 @@ hybrid FC
 
 `template FC` represents a group-level or reference connectivity matrix. `subject FC` represents each participant's own functional connectivity matrix. `hybrid FC` represents the weighted combination of template FC and subject FC profiles.
 
+in the synthetic example, hybrid FC is generated using the reusable function:
+
+```text
+src/hybrid/taufc_func_build_hybrid_fc.m
+```
+
 the demo uses synthetic data only. the synthetic inputs have the following dimensions:
 
 ```text

@@ -1,8 +1,10 @@
 # 04 regional FC PET fits
 
-this demo runs regional FC–PET regression models using the original `run_fitlms.m` utility.
+this demo illustrates how regional tau-PET patterns can be modelled as a function of functional connectivity profiles.
 
-the goal is to estimate how well regional tau-PET patterns can be explained by functional connectivity profiles. for each group, the model relates parcellated tau-PET signal to FC profiles across cortical regions.
+the goal is to estimate whether the PET signal in each target region is better explained by a group-level template FC profile, a subject-specific FC profile, or their combination. this provides the regional model weights used later to construct hybrid FC.
+
+the implementation uses the original `run_fitlms.m` utility.
 
 the demo compares three model families:
 
@@ -32,6 +34,8 @@ the main call is:
 ```matlab
 [FITLMS, TmplFC_proc, rng_setting] = run_fitlms(FC, PET, N, TmplFC, opts);
 ```
+
+the demo reports corrected R2 values for the regional model fits and summarizes the average model performance across regions and subjects.
 
 the demo saves outputs to:
 

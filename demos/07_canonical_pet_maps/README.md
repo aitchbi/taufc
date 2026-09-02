@@ -1,10 +1,14 @@
 # 07 canonical PET maps
 
-this demo estimates canonical off- and on-target PET patterns from parcellated PET SUVR data using the original `hb_tp2tpp.m` utility.
+this demo illustrates how cohort-level canonical PET maps can be estimated from parcellated tau-PET data.
 
-canonical PET maps are cohort-level reference patterns. they summarize typical regional PET signal distributions observed across subjects, rather than representing any single participant.
+canonical PET maps are reference patterns that summarize typical regional PET signal distributions across subjects, rather than representing any single participant. in this workflow, they are used to summarize off-target and on-target tau-PET binding patterns across cortical regions.
 
-the maps are derived using region-wise Gaussian mixture modelling. for each cortical region, `hb_tp2tpp.m` fits one- and two-component Gaussian mixture models to PET SUVR values across subjects. this approach follows Vogel et al. (2020), where Gaussian mixture modelling was used to define tau-PET positivity probabilities. here, the same regional mixture-model framework is used to define canonical PET-pattern maps: the lower-mean component is treated as off-target binding, the higher-mean component is treated as on-target binding, and the component means across regions form the canonical off- and on-target maps.
+the maps are derived using region-wise Gaussian mixture modelling. for each cortical region, one- and two-component Gaussian mixture models are fitted to PET SUVR values across subjects. this approach follows Vogel et al. (2020), where Gaussian mixture modelling was used to define tau-PET positivity probabilities.
+
+here, the same regional mixture-model framework is used to define canonical PET-pattern maps: the lower-mean component is treated as off-target binding, the higher-mean component is treated as on-target binding, and the component means across regions form the canonical off- and on-target maps.
+
+the implementation uses the original `hb_tp2tpp.m` utility.
 
 the demo uses synthetic PET data only, with input dimensions:
 
@@ -24,6 +28,14 @@ the demo saves outputs to:
 
 ```text
 demos/07_canonical_pet_maps/results/
+```
+
+the saved outputs include:
+
+```text
+canonical_pet_maps_demo_outputs.mat
+canonical_pet_maps_demo.png
+regional_gmm_region_010.png
 ```
 
 this demo documents the canonical PET-pattern estimation step. it does not include BioFINDER-2, ADNI, or A4 data, and it does not regenerate manuscript figures.

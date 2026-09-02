@@ -7,7 +7,7 @@ MATLAB tools for modelling tau-PET topography using functional connectivity, acc
 preprint of the original submitted manuscript:  
 https://www.biorxiv.org/content/10.1101/2025.10.02.679969v2
 
-Related posts from the original submission:
+related posts from the original submission:
 
 - Bluesky: https://bsky.app/profile/aitchbi.bsky.social/post/3m2lr5rfwkk2q
 - X/Twitter: https://x.com/aitchbi/status/1975551318103388288
@@ -15,17 +15,21 @@ Related posts from the original submission:
 
 ## purpose
 
-this repository provides MATLAB code implementing the core analytical framework used in the manuscript, including subject-space Schaefer parcellation, subject-space surface projection/parcellation of rs-fMRI and PET data, regional FC-PET regression, hybrid functional connectivity construction, whole-brain model comparison, canonical PET-pattern modelling, FC null-model analyses, Moran surrogate tau-PET maps, cross-validated ridge regression, and split-half coefficient stability.
+this repository provides MATLAB code implementing core analytical components of the manuscript, including surface-based Schaefer parcellation, rs-fMRI and PET surface processing, regional FC–PET regression, hybrid functional connectivity construction, whole-brain model comparison, canonical PET-pattern modelling, and FC null-model analyses.
 
-the repository is organized as a set of independent mini-demos rather than as one monolithic reproduction script. each demo illustrates one core component of the analysis and documents the expected inputs and outputs.
+the repository is organized as a set of independent mini-demos rather than as one monolithic reproduction script. each demo illustrates one component of the analysis and documents the expected inputs and outputs.
+
+some analyses added during manuscript revision, including Moran surrogate tau-PET analyses, cross-validated ridge-regression analyses, coefficient-stability analyses, and longitudinal follow-up analyses, require additional original scripts before they can be finalized here.
 
 ## important data note
 
 BioFINDER-2, ADNI, and A4 imaging data are not distributed with this repository. users with access to the relevant datasets can adapt the demo input sections to their own parcellated FC and PET matrices.
 
-## current status
+## repository scope
 
-this repository is released in connection with a revision of the original manuscript submitted for second round of peer review. the current version provides the directory structure, input/output templates, and documented entry points for the core analyses. method functions marked as pending will be filled with the exact implementations used in the revised manuscript. the repository does not intend to regenerate every figure in the manuscript. the aim is to provide reusable MATLAB implementations of the core methods underlying the main analyses. figure-specific reproduction scripts may be added in future updates.
+this repository is intended to document and support reuse of the main analytical framework, rather than to provide a one-command reproduction of every manuscript figure.
+
+the runnable examples use either synthetic data or user-supplied local neuroimaging files. controlled-access cohort data and derived participant-level imaging matrices are not included.
 
 ## quick start
 
@@ -35,7 +39,7 @@ in MATLAB, from the repository root:
 startup
 ```
 
-then open a demo folder, read its `README.md`, and run the corresponding `taufc_demo_*.m` file after replacing the input block with your own data or after the synthetic example input has been added. demos 01-03 are different from the synthetic-data demos because subject-space parcellation, rs-fMRI surface projection, and PET surface projection require real FreeSurfer outputs, imaging files, registration transforms, and local atlas resources.
+then open a demo folder, read its `README.md`, and run the corresponding `taufc_demo_*.m` file.
 
 example:
 
@@ -47,7 +51,7 @@ run('demos/04_regional_fc_pet_fits/taufc_demo_regional_fc_pet_fits.m')
 ## repository layout
 
 ```text
-Behjat2026_tauFC_MATLAB/
+taufc/
 ├── README.md
 ├── startup.m
 ├── CITATION.cff
@@ -62,10 +66,9 @@ Behjat2026_tauFC_MATLAB/
 │   ├── nulls/
 │   ├── ridge/
 │   ├── longitudinal/
-│   ├── io/
 │   └── utils/
 └── demos/
-    ├── 01_subject_space_schaefer_parcellation/
+    ├── 01_schaefer_parcellation_surface_subject/
     ├── 02_build_fc_surface_subject/
     ├── 03_parcellate_pet_surface_subject/
     ├── 04_regional_fc_pet_fits/
@@ -91,21 +94,31 @@ helper scripts use the prefix `taufc_scr_*.m`.
 
 general-purpose helper functions with naming format `hb_*.m` are maintained separately in:
 
+```text
 https://github.com/aitchbi/matlab-utils
+```
 
-they are not duplicated here. demos or functions that depend on `hb_*` utilities will state this in their local README file.
+graph-rewiring utilities used for strength-preserving null models are maintained separately in:
+
+```text
+https://github.com/aitchbi/graph_rewiring
+```
+
+demos or functions that depend on external utilities state this in their local README file.
 
 ## dependencies
 
-the code is written for MATLAB. additional dependencies will be listed per demo when required.
+the code is written for MATLAB. additional dependencies are listed per demo when required.
 
 expected external dependencies include:
 
+- MATLAB Statistics and Machine Learning Toolbox for OLS model fitting with `fitlm`
 - Harry Behjat MATLAB utilities: https://github.com/aitchbi/matlab-utils
-- external null-model implementations used for degree-preserving or degree- and strength-preserving FC randomization, where applicable
+- graph-rewiring utilities: https://github.com/aitchbi/graph_rewiring
+- FreeSurfer and local atlas resources for surface-based subject-space demos
 - external Moran spectral randomization code or MATLAB implementation, where applicable
 
-See `docs/dependencies.md` for details.
+see `docs/dependencies.md` for details.
 
 ## citation
 

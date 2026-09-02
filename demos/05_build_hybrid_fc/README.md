@@ -2,12 +2,28 @@
 
 this demo builds hybrid FC matrices by combining template FC and subject-specific FC using regional model weights.
 
+the reusable implementation is:
+
+```text
+src/hybrid/taufc_func_build_hybrid_fc.m
+```
+
 hybrid FC is a weighted connectivity matrix. for each subject, the template FC and subject FC matrices are first column-normalized. each regional FC profile is then weighted by its corresponding template-FC and subject-FC beta coefficient, and the resulting hybrid FC matrix is column-normalized again after mixing.
 
 conceptually, the hybrid FC for each subject is:
 
 ```text
 hybrid FC = weighted template FC + weighted subject FC
+```
+
+the main call is:
+
+```matlab
+HybridFC(:,:,is) = taufc_func_build_hybrid_fc( ...
+    TmplFC, ...
+    SubjFC(:,:,is), ...
+    beta_tmpl(is,:), ...
+    beta_subj(is,:));
 ```
 
 the demo uses synthetic data only. the synthetic inputs have the following dimensions:

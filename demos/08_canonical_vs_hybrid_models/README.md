@@ -14,7 +14,13 @@ canonical PET maps + hybrid FC
 
 `canonical PET maps` are cohort-level off- and on-target PET reference patterns. in this demo, they are used as regional PET-pattern predictors.
 
-`hybrid FC` represents subject-specific weighted FC profiles derived from template FC and subject FC. the hybrid-FC model is fitted using the standalone `fitlhrh.m` utility.
+`hybrid FC` represents subject-specific weighted FC profiles derived from template FC and subject FC. in the synthetic example, hybrid FC is generated using the reusable function:
+
+```text
+src/hybrid/taufc_func_build_hybrid_fc.m
+```
+
+the hybrid-FC model is fitted using the standalone `fitlhrh.m` utility. the canonical-only model is fitted using the standalone `fitols_regional.m` utility.
 
 the combined model adds the canonical PET-pattern predictors to the hybrid-FC design matrix, following the same modelling logic used in `run_fitlms.m`.
 
