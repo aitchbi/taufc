@@ -1,28 +1,119 @@
-# demo: degree- and strength-preserving FC null model
+# 10 strength-preserving FC null
 
-## purpose
+this demo illustrates how strength-preserving null FC matrices can be used to test whether FC–PET associations depend on specific weighted network organization.
 
-This demo documents how to run the degree- and strength-preserving FC null model module.
+## theory
 
-## manuscript connection
+the purpose of this null model is to test whether the explanatory value of subject-specific FC depends on the detailed weighted connectivity pattern, or whether similar performance could be obtained from a randomized network that preserves simpler nodal properties.
 
-Fig. 1 and Fig. S1.
+a degree-preserving null rewires the network while preserving each node's degree. this keeps the number of connections per region fixed, but randomizes where those connections are placed.
 
-## inputs
+a strength-preserving null goes one step further. it aims to preserve not only the degree sequence, but also the weighted strength sequence. nodal strength is the sum of edge weights connected to each node. preserving strength is important for weighted FC matrices, because some regions may have generally stronger connectivity than others.
 
-- `subject_fc: P x P subject-level FC matrix`
-- `external degree- and strength-preserving null-model dependency`
+the strength-preserving null used here follows the simulated-annealing framework described by Milisav et al. (2025). in this framework, a degree-preserved rewired graph is used as the starting point, and edge weights are then adjusted so that the randomized network approximately recovers the original nodal strength sequence.
+
+this null model is useful because empirical FC could explain tau-PET patterns partly because of broad nodal properties, such as how strongly connected each region is overall. if empirical subject FC explains more tau-PET variance than strength-preserving null FC, this suggests that the result depends on more specific weighted network organization beyond nodal strength alone.
+
+in this demo, the null FC is not implemented independently. instead, the demo activates the same strength-preserving null-model option inside `run_fitlms.m`. `run_fitlms.m` then calls the required graph-rewiring utilities internally.
+
+the empirical subject FC, degree-preserving null FC, and strength-preserving null FC are entered into the same regional FC–PET regression pipeline, allowing direct comparison of corrected R2 values.
+
+for more detail on the graph-rewiring procedure, including example plots and visual illustrations of degree- and strength-preserving rewired FC matrices, see the README of the graph-rewiring repository:
+
+```text
+https://github.com/aitchbi/graph_rewiring/blob/main/README.md
+```
+
+## dependencies
+
+this demo requires graph-rewiring utilities from:
+
+```text
+https://github.com/aitchbi/graph_rewiring
+```
+
+in particular, the demo requires:
+
+```text
+fcn_randomize_str_hb.m
+hb_graph_rewire.m
+```
+
+and any additional helper functions that these files call.
+
+`fcn_randomize_str_hb.m` is the wrapper/updated implementation used in this workflow. the related `graph_rewiring` repository explains its relationship to earlier graph-rewiring code and to the simulated-annealing strength-preserving null model of Milisav et al. (2025).
+
+for this repository, the required functions should either be included under:
+
+```text
+src/utils/utils_tmp/
+```
+
+or otherwise be available on the MATLAB path.
+
+the demo also requires the Statistics and Machine Learning Toolbox for `fitlm`.
+
+## synthetic input data
+
+the demo uses synthetic data only. the synthetic inputs have the same structure expected by `run_fitlms.m`:
+
+```text
+FC{group}:  regions x regions x subjects
+PET{group}: regions x subjects
+N:          subjects per group
+TmplFC:     regions x regions
+```
+
+`FC` is a cell array with one entry per group. each `FC{group}` entry contains subject-level FC matrices. `PET` is a cell array with matching group structure, where each column is one subject and each row is one atlas parcel.
+
+to use real data, replace the synthetic `FC`, `PET`, `N`, and `TmplFC` variables in the demo script with parcellated FC and tau-PET data from the desired cohort and atlas. the number of PET rows must match the number of FC regions, and the number of PET columns must match the number of FC subjects within each group.
+
+## main call
+
+the main call is:
+
+```matlab
+[FITLMS, TmplFC_proc, rng_setting] = run_fitlms(FC, PET, N, TmplFC, opts);
+```
+
+the strength-preserving null model is activated using:
+
+```matlab
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.do = true;
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.nstage = 5;
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.niter = 500;
+opts.ShuffledSubjAnalysis_StrengthSequenceApproxPreserve.temp = 1000;
+```
+
+the degree-preserving option is also enabled because the strength-preserving null uses a degree-preserving rewired graph as its starting point:
+
+```matlab
+opts.ShuffledSubjAnalysis_DegreeSequencePreserve.do = true;
+opts.ShuffledSubjAnalysis_DegreeSequencePreserve.type = 'PreserveDegreeSequence';
+```
+
+the values of `nstage`, `niter`, and `temp` in the demo are intentionally small so that the example runs quickly. larger values should be used for production analyses.
 
 ## outputs
 
-- `null_fc: P x P degree- and strength-preserving null FC matrix`
+the demo saves outputs to:
 
-## status
+```text
+demos/10_strength_preserving_fc_null/results/
+```
 
-The exact manuscript implementation will be added to the corresponding `src/` function. this demo intentionally does not include a simplified replacement implementation.
+the saved outputs include:
 
-## how to use
+```text
+strength_preserving_fc_null_demo_outputs.mat
+strength_preserving_fc_null_demo_summary.csv
+strength_preserving_fc_null_demo_summary.png
+```
 
-1. run `startup` from the repository root.
-2. replace the input block in the demo script with your own parcellated data.
-3. run the demo script.
+this demo documents the strength-preserving FC null-model step. it does not include BioFINDER-2, ADNI, or A4 data, and it does not regenerate manuscript figures.
+
+## references
+
+Maslov, S., and Sneppen, K. (2002). Specificity and stability in topology of protein networks. *Science*, 296, 910–913.
+
+Milisav, F., Bazinet, V., Betzel, R. F., and Misic, B. (2025). A simulated annealing algorithm for randomizing weighted networks. *Nature Computational Science*, 5, 48–64.
