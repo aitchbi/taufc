@@ -1,48 +1,165 @@
-# demo 02: project rs-fMRI to subject surfaces and build FC
+# 02 build FC on subject surface
 
-## purpose
+this demo shows how to build a subject-level FC matrix from an rs-fMRI volume using subject-space surface parcellation.
 
-This demo shows the subject-space rs-fMRI surface-projection and FC construction workflow. In the original manuscript code, this corresponds to the `BuildFC_SurfaceSUBJ` option in `script_one.m`.
+the workflow is:
 
-The workflow projects each rs-fMRI time frame to the participant's FreeSurfer cortical surface, parcellates the surface time series using subject-space Schaefer annotations, extracts parcel time series, and computes a parcel-by-parcel FC matrix.
+```text
+rs-fMRI volume
+-> project to subject surface
+-> extract parcel time series
+-> build parcel-by-parcel FC
+```
 
-## manuscript connection
+the demo depends on the separate `surfparc` repository:
 
-This demo relates to the preprocessing path that produced the subject-specific FC matrices used throughout the manuscript.
+```text
+https://github.com/aitchbi/surfparc
+```
 
-## inputs
+it also requires `hb_nii_verify_space_match_v2.m` from:
 
-This demo is not synthetic-data based. It requires real preprocessed rs-fMRI data and FreeSurfer outputs.
+```text
+https://github.com/aitchbi/matlab-utils
+```
 
-The original BioFINDER workflow expects:
+## required inputs
 
-- subject/session identifiers
-- FreeSurfer subject directory and surfaces
-- subject-space Schaefer annotation files from demo 01
-- preprocessed rs-fMRI volume
-- registration transforms needed to bring rs-fMRI data into the participant's anatomical/FreeSurfer space
-- local path adapters for cohort-specific file naming
+the demo requires:
 
-For non-BioFINDER data, users should adapt the lower-level calls to their own data layout.
+```text
+dir_subject_fs
+f_rsfmri
+dir_freesurfer
+WhichAtlas
+```
+
+`dir_subject_fs` is the absolute path to one subject's FreeSurfer output directory.
+
+`f_rsfmri` is the absolute path to the subject's rs-fMRI volume. this file must be registered to the subject's FreeSurfer anatomical space before projection to the surface.
+
+`dir_freesurfer` is the absolute path to the local FreeSurfer installation.
+
+`WhichAtlas` specifies the atlas used for parcellation, for example:
+
+```text
+Schaefer100Yeo7
+```
+
+## registration and space checking
+
+surface projection is only meaningful if the rs-fMRI volume is correctly registered to the subject's FreeSurfer anatomy.
+
+by default, the demo uses FreeSurfer `--regheader` logic. in this case, the rs-fMRI volume must be voxel/header matched to the subject's FreeSurfer reference volume:
+
+```text
+mri/ribbon.nii
+```
+
+the demo checks this before projection using:
+
+```text
+taufc_func_verify_freesurfer_space.m
+```
+
+which calls:
+
+```text
+hb_nii_verify_space_match_v2.m
+```
+
+if the rs-fMRI file is registered to FreeSurfer space but does not have the same voxel grid/header as the FreeSurfer reference volume, provide an explicit FreeSurfer registration file using:
+
+```matlab
+f_reg = '/absolute/path/to/register.dat';
+```
+
+if `f_reg` is provided, the strict voxel/header check is skipped and the registration file is passed to the surface-projection step.
+
+## required output from demo 01
+
+this demo expects that demo 01 has already created subject-space annotation files:
+
+```text
+dir_subject_fs/HB/schaefer/lh.schaefer100yeo7.annot
+dir_subject_fs/HB/schaefer/rh.schaefer100yeo7.annot
+```
+
+these files define the atlas parcels on the subject's cortical surface.
+
+## main processing steps
+
+the rs-fMRI volume is projected to the subject's left and right cortical surfaces using:
+
+```matlab
+out_surf = hb_surfparc_project_volume_to_surface( ...
+    f_rsfmri, ...
+    dir_subject_fs, ...
+    'OutputDir', dir_surface, ...
+    'OutputPrefix', ['rsfmri_', atlas_name], ...
+    'DirFreeSurfer', dir_freesurfer, ...
+    'RegFile', f_reg, ...
+    'ProjFrac', 0.5);
+```
+
+parcel time series are then extracted using the subject-space annotation files:
+
+```matlab
+out_values = hb_surfparc_extract_parcel_values( ...
+    out_surf.f_surface.lh, ...
+    out_surf.f_surface.rh, ...
+    f_annot_lh, ...
+    f_annot_rh, ...
+    'OutputFile', f_timeseries);
+```
+
+finally, FC is built from the parcel time series using:
+
+```matlab
+[FC, out_fc] = taufc_func_build_fc_from_timeseries( ...
+    parcel_ts, ...
+    'ZeroDiag', true, ...
+    'PositiveOnly', true, ...
+    'FisherZ', true);
+```
 
 ## outputs
 
-Expected outputs are:
+outputs are written under:
 
-- parcellated rs-fMRI time series
-- subject-specific FC matrix
-- parcel labels
+```text
+dir_subject_fs/HB/
+```
 
-In the original workflow, these are saved to subject-level `HB/FC` output folders.
+surface-projected rs-fMRI files are written to:
 
-## dependencies
+```text
+dir_subject_fs/HB/surface/
+```
 
-This workflow requires MATLAB, FreeSurfer, SPM12, ANTs, and helper functions/scripts from:
+parcel time series and FC outputs are written to:
 
-https://github.com/aitchbi/matlab-utils
+```text
+dir_subject_fs/HB/fc/
+```
 
-It also uses original helper utilities included under `src/utils/utils_tmp/`. Some cohort-specific path helpers under `src/utils/utils_tmp/etc/` are placeholders and must be adapted for non-local datasets.
+the saved outputs include:
 
-## notes
+```text
+rsfmri_schaefer100yeo7_parcel_timeseries.mat
+rsfmri_schaefer100yeo7_fc.mat
+```
 
-This demo keeps the top-level call close to the original manuscript code. The purpose is to show the analysis entry point and required input organization without exposing controlled-access cohort paths or metadata.
+`parcel_ts` has dimensions:
+
+```text
+regions x timepoints
+```
+
+`FC` has dimensions:
+
+```text
+regions x regions
+```
+
+this demo documents the subject-level FC construction step. it does not include rs-fMRI data, FreeSurfer outputs, or BioFINDER-2, ADNI, or A4 data.
