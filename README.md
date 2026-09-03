@@ -15,7 +15,13 @@ related posts from the original submission:
 
 ## purpose
 
-this repository provides MATLAB code implementing core analytical components of the manuscript, including surface-based Schaefer parcellation, rs-fMRI and PET surface processing, regional FC–PET regression, hybrid functional connectivity construction, whole-brain model comparison, canonical PET-pattern modelling, and FC null-model analyses.
+this repository provides MATLAB code implementing core analytical components of the manuscript, including rs-fMRI and PET surface processing, regional FC–PET regression, hybrid functional connectivity construction, whole-brain model comparison, canonical PET-pattern modelling, and FC null-model analyses.
+
+subject-space surface parcellation and surface-based extraction are handled through the companion `surfparc` repository:
+
+```text
+https://github.com/aitchbi/surfparc
+```
 
 the repository is organized as a set of independent mini-demos rather than as one monolithic reproduction script. each demo illustrates one component of the analysis and documents the expected inputs and outputs.
 
@@ -58,7 +64,7 @@ taufc/
 ├── LICENSE
 ├── docs/
 ├── src/
-│   ├── parcellation/
+│   ├── connectivity/
 │   ├── regional/
 │   ├── hybrid/
 │   ├── wholebrain/
@@ -98,6 +104,12 @@ general-purpose helper functions with naming format `hb_*.m` are maintained sepa
 https://github.com/aitchbi/matlab-utils
 ```
 
+subject-space surface parcellation and surface-based extraction functions are maintained separately in:
+
+```text
+https://github.com/aitchbi/surfparc
+```
+
 graph-rewiring utilities used for strength-preserving null models are maintained separately in:
 
 ```text
@@ -113,6 +125,7 @@ the code is written for MATLAB. additional dependencies are listed per demo when
 expected external dependencies include:
 
 - MATLAB Statistics and Machine Learning Toolbox for OLS model fitting with `fitlm`
+- surfparc for subject-space surface parcellation and surface-based extraction: https://github.com/aitchbi/surfparc
 - Harry Behjat MATLAB utilities: https://github.com/aitchbi/matlab-utils
 - graph-rewiring utilities: https://github.com/aitchbi/graph_rewiring
 - FreeSurfer and local atlas resources for surface-based subject-space demos
@@ -123,3 +136,7 @@ see `docs/dependencies.md` for details.
 ## citation
 
 please cite the manuscript and this repository if you use the code. citation metadata for the repository is provided in `CITATION.cff` and will be updated with the final DOI after publication.
+
+## license
+
+this repository is distributed under the GNU General Public License v3.0. see `LICENSE` for details.
